@@ -58,7 +58,7 @@ def number_generate():
 	while Board[newx][newy]!=0:
 		newx=random.randrange(0,4)
 		newy=random.randrange(0,4)
-	makeTile(180+110*newy,300+110*newx,2,(255,255,255))
+	makeTile(180+110*newy,300+110*newx,2,(240,240,240))
 	Board[newx][newy]=2
 		
 def makeTile(x,y,n,colour):
@@ -144,9 +144,17 @@ DrawBoard("2048")
 number_generate()
 WHITE = (255, 255, 255)
 
-
+wait=0
 while True:
+
+	if wait==1:
+			time.sleep(0.1)
+			number_generate()
+			wait=0
+
 	for event in pygame.event.get():
+
+		
 		
 		if event.type==KEYUP:
 			IsCombined=[[0 for x in range(0,4)] for x in range (0,4)]
@@ -165,8 +173,8 @@ while True:
 					#pygame.display.set_caption(str(movecount))
 				#time.sleep(1)
 				if move==True:
-					number_generate()
-					
+					wait=1
+
 			
 		elif event.type==QUIT:
 			pygame.quit()
