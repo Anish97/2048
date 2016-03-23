@@ -10,8 +10,8 @@ pygame.display.set_caption('Animation')
 Board=[[0 for x in range(0,4)] for x in range (0,4)]
 #Board=[[32,4,2,0],[8,32,8,4],[128,64,32,8],[2048,1024,64,16]]
 IsCombined=[[0 for x in range(0,4)] for x in range (0,4)]
-BASICFONT=pygame.font.Font('freesansbold.ttf',50)
-GAMEFONT=pygame.font.Font('freesansbold.ttf',100)
+BASICFONT=pygame.font.Font('freesansbold.ttf',40)
+GAMEFONT=pygame.font.Font('freesansbold.ttf',80)
 
 def TileColours(n):
 	if n==2:return (255,255,255)
@@ -61,13 +61,17 @@ def number_generate():
 	makeTile(180+110*newy,300+110*newx,2,(240,240,240))
 	Board[newx][newy]=2
 		
-def makeTile(x,y,n,colour):
-	pygame.draw.rect(DISPLAYSURF,colour, (x,y, 100,100))
+def makeTile(x,y,n,colour,size=100):
+	pygame.draw.rect(DISPLAYSURF,colour, (x,y, size,size))
 	textSurf=BASICFONT.render(str(n),True,(0,0,0))
 	textRect=textSurf.get_rect()
 	textRect.center=(x+50,y+50)
 	DISPLAYSURF.blit(textSurf, textRect)
 
+def expandTile(i,j):
+	makeTile(175+110*j,295+110*i,Board[i][j], TileColours(Board[i][j]),110)
+	pygame.display.update()
+	time.sleep(0.05)
 
 def MoveTiles(key,exc):
 	
@@ -79,14 +83,14 @@ def MoveTiles(key,exc):
 				if Board[i][j]==0 and Board[i+1][j]!=0:
 					if exc==0:
 						Board[i][j],Board[i+1][j]=Board[i+1][j],Board[i][j]
-						
 					return True
 				elif Board[i][j]==Board[i+1][j] and Board[i][j]!=0 and IsCombined[i][j]==0 and IsCombined[i+1][j]==0:
 					if exc==0:
-						Board[i+1][j]*=2
-						Board[i][j]=0
-						IsCombined[i+1][j]=1
-						score+=Board[i+1][j]
+						Board[i][j]*=2
+						Board[i+1][j]=0
+						IsCombined[i][j]=1
+						score+=Board[i][j]
+						expandTile(i,j)
 					return True	
 				
 					
@@ -100,10 +104,11 @@ def MoveTiles(key,exc):
 					
 				elif Board[i][j]==Board[i-1][j] and Board[i][j]!=0 and IsCombined[i][j]==0 and IsCombined[i-1][j]==0:
 					if exc==0:
-						Board[i-1][j]*=2
-						Board[i][j]=0
+						Board[i][j]*=2
+						Board[i-1][j]=0
 						IsCombined[i][j]=1
-						score+=Board[i-1][j]
+						score+=Board[i][j]
+						expandTile(i,j)
 					return True	
 					
 	elif key==K_LEFT:
@@ -120,6 +125,7 @@ def MoveTiles(key,exc):
 						Board[i][j+1]=0
 						IsCombined[i][j]=1
 						score+=Board[i][j]
+						expandTile(i,j)
 					return True	
 					
 	elif key==K_RIGHT:
@@ -136,6 +142,7 @@ def MoveTiles(key,exc):
 						Board[i][j-1]=0
 						IsCombined[i][j]=1
 						score+=Board[i][j]
+						expandTile(i,j)
 					return True
 					
 	return False
@@ -144,13 +151,8 @@ DrawBoard("2048")
 number_generate()
 WHITE = (255, 255, 255)
 
-wait=0
 while True:
 
-	if wait==1:
-			time.sleep(0.1)
-			number_generate()
-			wait=0
 
 	for event in pygame.event.get():
 
@@ -166,14 +168,18 @@ while True:
 
 				move=False
 				while MoveTiles(event.key,0)==True:
-					
+					time.sleep(0.01)
 					DrawBoard("2048")
 					move=True
-					
+					pygame.display.update()
 					#pygame.display.set_caption(str(movecount))
 				#time.sleep(1)
 				if move==True:
-					wait=1
+					
+					time.sleep(0.01)
+					number_generate()
+					DrawBoard("2048")
+					pygame.display.update()
 
 			
 		elif event.type==QUIT:
