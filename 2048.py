@@ -4,6 +4,7 @@ highscore=[]
 score=0
 Board=[[0 for x in range(0,4)] for x in range (0,4)]
 pygame.init()
+#file for storing the highscores
 f=open("scores.txt","a")
 f.close()
 # set up the window
@@ -97,6 +98,7 @@ def expandTile(i,j):
 	time.sleep(0.05)
 
 def update_highscores():
+	"""Updates the highscores in the file"""
 	written=False
 	counter=0
 	contents=[]
@@ -215,9 +217,7 @@ def MoveTiles(key,exc):
 	return False
 newboard()
 welcome()
-#update_highscores()
-#endscreen()
-#number_generate()
+
 WHITE = (full, full, full)
 started=False
 while True:
@@ -230,7 +230,6 @@ while True:
 				number_generate()
 				started=True
 				pygame.display.update()
-				print started
 				break
 			if started==True:
 									
@@ -261,7 +260,7 @@ while True:
 					score=0
 					Board=[[0 for x in range(0,4)] for x in range (0,4)]
 					started=False
-					print started
+					
 			
 		elif event.type==QUIT:
 			pygame.quit()
