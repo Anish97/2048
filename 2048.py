@@ -4,6 +4,8 @@ highscore=[]
 score=0
 Board=[[0 for x in range(0,4)] for x in range (0,4)]
 pygame.init()
+f=open("scores.txt","a")
+f.close()
 # set up the window
 DISPLAYSURF = pygame.display.set_mode((800, 800),0, 32)
 pygame.display.set_caption('Animation')
@@ -94,10 +96,34 @@ def expandTile(i,j):
 	pygame.display.update()
 	time.sleep(0.05)
 
+def update_highscores():
+	written=False
+	counter=0
+	contents=[]
+	f=open("scores.txt","r")
+	for line in f:
+		contents.append(line)
+		print line
+		if int(line)>score:
+			counter+=1
+	print counter
+	print contents
+	f.close()
+	if counter<5:
+		contents.insert(counter,str(score)+"\n")
+
+		f = open("scores.txt", "w")
+		contents = "".join(contents)
+		f.write(contents)
+		f.close()
+	print contents
+
 def endscreen():
 	"""Displays the highscores"""
 	DISPLAYSURF = pygame.display.set_mode((800, 800),0, 32)
 	text="Hit Spacebar to play again"
+	file=open("scores.txt","r")
+	highscore = [line.strip() for line in file if line.strip()]
 	y=100
 	for i in range(-1,min(5,len(highscore))):
 		if i==-1:
@@ -112,6 +138,7 @@ def endscreen():
 		DISPLAYSURF.blit(welSurf,welRect)
 		y+=100
 	pygame.display.update()
+	file.close()
 
 def MoveTiles(key,exc):
 	"""The whole algorithm of 2048"""
@@ -188,6 +215,8 @@ def MoveTiles(key,exc):
 	return False
 newboard()
 welcome()
+#update_highscores()
+#endscreen()
 #number_generate()
 WHITE = (full, full, full)
 started=False
@@ -225,8 +254,8 @@ while True:
 					DrawBoard("GAME OVER.")
 					pygame.display.update()
 					time.sleep(3)
-					highscore.append(score)
-					highscore.sort(reverse=True)
+					
+					update_highscores()
 					endscreen()
 					newboard()
 					score=0
