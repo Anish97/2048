@@ -1,44 +1,62 @@
 import pygame, sys, random, time
 from pygame.locals import *
-
-#global score
+highscore=[]
 score=0
+Board=[[0 for x in range(0,4)] for x in range (0,4)]
 pygame.init()
 # set up the window
 DISPLAYSURF = pygame.display.set_mode((800, 800),0, 32)
 pygame.display.set_caption('Animation')
-Board=[[0 for x in range(0,4)] for x in range (0,4)]
-#Board=[[32,4,2,0],[8,32,8,4],[128,64,32,8],[2048,1024,64,16]]
 IsCombined=[[0 for x in range(0,4)] for x in range (0,4)]
 BASICFONT=pygame.font.Font('freesansbold.ttf',40)
 GAMEFONT=pygame.font.Font('freesansbold.ttf',80)
+full=255
+half=128
+def newboard():
+	"""Sets up a new board when the user wants to play again."""
+	score=0
+	Board=[[2 for x in range(0,4)] for x in range (0,4)]
+def TileColours(n,full,half):
+	"""To assign a numbered tile a specific colour"""
+	if n==2:return (full,full,full)
+	elif n==4:return (full,0,0)
+	elif n==8:return (0,full,0)
+	elif n==16:return (0,0,full)
+	elif n==32:return (0, full,full)
+	elif n==64:return (full, 0,full)
+	elif n==128:return (full,full, 0)
+	elif n==256:return (  0, half, full)
+	elif n==512:return (full,0,half)
+	elif n==1024:return (half, full,0)
+	else :return (half,half,half)
 
-def TileColours(n):
-	if n==2:return (255,255,255)
-	elif n==4:return (255,0,0)
-	elif n==8:return (0,255,0)
-	elif n==16:return (0,0,255)
-	elif n==32:return (0, 255,255)
-	elif n==64:return (255, 0,255)
-	elif n==128:return (255,255, 0)
-	elif n==256:return (  0, 128, 255)
-	elif n==512:return (255,0,128)
-	elif n==1024:return (128, 255,0)
-	elif n==2048:return (128,128,128)
-	else:return (0,0,0)
+def welcome():
+	"""This is the welcome screen"""
+	DISPLAYSURF = pygame.display.set_mode((800, 800),0, 32)
+	text="Welcome to 2048.Press the arrow keys to move the tiles.Hit Spacebar to start playing."
+	line=text.split('.')
+	y=150
+	for i in range(0,3):
+		welSurf=BASICFONT.render(line[i],True,(0,full,0))
+		welRect=welSurf.get_rect()
+		welRect.center=(400,y)
+		DISPLAYSURF.blit(welSurf,welRect)
+		y+=75
+	pygame.display.update()
+
 
 def DrawBoard(text):
+	"""This function draws the whole 2048 board"""
 	DISPLAYSURF = pygame.display.set_mode((800, 800), 0, 32)
 	pygame.draw.rect(DISPLAYSURF,(100,100,100),((150,270,500,500)))
-#	pygame.draw.rect(DISPLAYSURF,(0,0,0), ((300,100, 200,100)))
-#	pygame.draw.rect(DISPLAYSURF,(0,0,0), ((600,100, 200,100)))
-	gameSurf=GAMEFONT.render(text,True,(255,255,0))
+	gameSurf=GAMEFONT.render(text,True,(full,full,0))
 	gameRect=gameSurf.get_rect()
 	gameRect.center=(400,150)
 	DISPLAYSURF.blit(gameSurf,gameRect)
-	pointSurf=BASICFONT.render("Score: "+str(score),True,(255,255,0))
+	
+	pointSurf=BASICFONT.render("Score: "+str(score),True,(full,full,0))
 	pointRect=pointSurf.get_rect()
-	pointRect.right=750
+	pointRect.left=550
 	pointRect.top=50
 	DISPLAYSURF.blit(pointSurf,pointRect)
 	for i in range(0,4):
@@ -48,11 +66,11 @@ def DrawBoard(text):
 				pygame.draw.rect(DISPLAYSURF,(150,150,150),((180+110*j,300+110*i,100,100)))
 				LOST=False
 			else:
-				makeTile(180+110*j,300+110*i,Board[i][j], TileColours(Board[i][j]))
-#			pygame.display.set_caption(str(Board[i][0]))
+				makeTile(180+110*j,300+110*i,Board[i][j], TileColours(Board[i][j],255,128))
+
 				
 def number_generate():
-#	numcount+=1
+	"""Randomly generates a tile with number 2 at each turn."""
 	newx=random.randrange(0,4)
 	newy=random.randrange(0,4)
 	while Board[newx][newy]!=0:
@@ -60,8 +78,10 @@ def number_generate():
 		newy=random.randrange(0,4)
 	makeTile(180+110*newy,300+110*newx,2,(240,240,240))
 	Board[newx][newy]=2
+
 		
 def makeTile(x,y,n,colour,size=100):
+	"""For drawing a tile. This function is used by DrawBoard()"""
 	pygame.draw.rect(DISPLAYSURF,colour, (x,y, size,size))
 	textSurf=BASICFONT.render(str(n),True,(0,0,0))
 	textRect=textSurf.get_rect()
@@ -69,12 +89,32 @@ def makeTile(x,y,n,colour,size=100):
 	DISPLAYSURF.blit(textSurf, textRect)
 
 def expandTile(i,j):
-	makeTile(175+110*j,295+110*i,Board[i][j], TileColours(Board[i][j]),110)
+	"""To create the combining effect when two tiles clash"""
+	makeTile(175+110*j,295+110*i,Board[i][j], TileColours(Board[i][j],128,64),110)
 	pygame.display.update()
 	time.sleep(0.05)
 
+def endscreen():
+	"""Displays the highscores"""
+	DISPLAYSURF = pygame.display.set_mode((800, 800),0, 32)
+	text="Hit Spacebar to play again"
+	y=100
+	for i in range(-1,min(5,len(highscore))):
+		if i==-1:
+			welSurf=BASICFONT.render(text,True,(full,full,0))
+			lx=150
+		else:
+			welSurf=BASICFONT.render("#"+str(i+1)+". "+str(highscore[i]),True,(0,full,0))
+			lx=300
+		welRect=welSurf.get_rect()
+		welRect.left=lx
+		welRect.top=y
+		DISPLAYSURF.blit(welSurf,welRect)
+		y+=100
+	pygame.display.update()
+
 def MoveTiles(key,exc):
-	
+	"""The whole algorithm of 2048"""
 	global score
 	
 	if key==K_UP:
@@ -146,25 +186,25 @@ def MoveTiles(key,exc):
 					return True
 					
 	return False
-	
-DrawBoard("2048")
-number_generate()
-WHITE = (255, 255, 255)
-
+newboard()
+welcome()
+#number_generate()
+WHITE = (full, full, full)
+started=False
 while True:
 
 
 	for event in pygame.event.get():
-
-		
-		
 		if event.type==KEYUP:
-			IsCombined=[[0 for x in range(0,4)] for x in range (0,4)]
-			if MoveTiles(K_UP,1)==False and MoveTiles(K_DOWN,1)==False and MoveTiles(K_LEFT,1)==False and MoveTiles(K_RIGHT,1)==False:
-				pygame.display.set_caption("LOST")
-				DrawBoard("GAME OVER.")
-			else:
-				
+			if started==False and event.key==K_SPACE:
+				DrawBoard("2048")
+				number_generate()
+				started=True
+				pygame.display.update()
+				print started
+				break
+			if started==True:
+									
 
 				move=False
 				while MoveTiles(event.key,0)==True:
@@ -172,15 +212,27 @@ while True:
 					DrawBoard("2048")
 					move=True
 					pygame.display.update()
-					#pygame.display.set_caption(str(movecount))
-				#time.sleep(1)
-				if move==True:
-					
+
+				if move==True:						
 					time.sleep(0.01)
 					number_generate()
 					DrawBoard("2048")
 					pygame.display.update()
 
+				IsCombined=[[0 for x in range(0,4)] for x in range (0,4)]
+				if MoveTiles(K_UP,1)==False and MoveTiles(K_DOWN,1)==False and MoveTiles(K_LEFT,1)==False and MoveTiles(K_RIGHT,1)==False:
+					pygame.display.set_caption("LOST")
+					DrawBoard("GAME OVER.")
+					pygame.display.update()
+					time.sleep(3)
+					highscore.append(score)
+					highscore.sort(reverse=True)
+					endscreen()
+					newboard()
+					score=0
+					Board=[[0 for x in range(0,4)] for x in range (0,4)]
+					started=False
+					print started
 			
 		elif event.type==QUIT:
 			pygame.quit()
